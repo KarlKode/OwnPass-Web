@@ -238,12 +238,12 @@ module.exports = LocationsController = (function(_super) {
     this.locations = new Collection(null, {
       model: Location
     });
-    this.locations.url = "" + window.api + "locations";
+    this.locations.url = "" + window.api + "logins";
     this.view = new LocationsView({
       collection: this.locations,
       region: 'main'
     });
-    this.view.render;
+    this.view.render();
     return this.locations.fetch();
   };
 
@@ -388,7 +388,7 @@ $(function() {
       }
     },
     statusCode: {
-      401: function(xhr) {
+      400: function(xhr) {
         var json;
         json = $.parseJSON(xhr.responseText);
         if ((json.id != null) && (json.device != null)) {
@@ -915,7 +915,7 @@ function program3(depth0,data) {
   return escapeExpression(stack1);
   }
 
-  buffer += "\n        <div class=\"navbar-header\">\n          <button type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\".navbar-collapse\">\n            <span class=\"icon-bar\"></span>\n            <span class=\"icon-bar\"></span>\n            <span class=\"icon-bar\"></span>\n          </button>\n          <a class=\"navbar-brand\" href=\"#\">OwnPass</a>\n        </div>\n        <div class=\"navbar-collapse collapse\">\n          <ul class=\"nav navbar-nav\">\n            <li class=\"active\"><a href=\"#\">Passwords</a></li> \n            <li ><a href=\"javascript:var e = document.createElement('script');e.setAttribute('language', 'javascript');e.setAttribute('src', 'http://localhost:3333/bookmarklet.js');window.email='";
+  buffer += "\n        <div class=\"navbar-header\">\n          <button type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\".navbar-collapse\">\n            <span class=\"icon-bar\"></span>\n            <span class=\"icon-bar\"></span>\n            <span class=\"icon-bar\"></span>\n          </button>\n          <a class=\"navbar-brand\" href=\"#\">OwnPass</a>\n        </div>\n        <div class=\"navbar-collapse collapse\">\n          <ul class=\"nav navbar-nav\">\n            <li class=\"active\"><a href=\"#passwords\">Passwords</a></li> \n            <li ><a href=\"#locations\">Locations</a></li> \n            <li ><a href=\"javascript:var e = document.createElement('script');e.setAttribute('language', 'javascript');e.setAttribute('src', 'http://localhost:3333/bookmarklet.js');window.email='";
   options = {hash:{},inverse:self.noop,fn:self.program(1, program1, data),data:data};
   if (stack1 = helpers.withUser) { stack1 = stack1.call(depth0, options); }
   else { stack1 = depth0.withUser; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
@@ -1019,6 +1019,47 @@ module.exports = LocationsView = (function(_super) {
   LocationsView.prototype.itemView = Location;
 
   LocationsView.prototype.template = require('./templates/locations');
+
+  LocationsView.prototype.initialize = function() {
+    LocationsView.__super__.initialize.apply(this, arguments);
+    return google.maps.visualRefresh = true;
+  };
+
+  LocationsView.prototype.render = function() {
+    var mapOptions;
+    LocationsView.__super__.render.apply(this, arguments);
+    mapOptions = {
+      zoom: 15,
+      center: new google.maps.LatLng(-34.397, 150.644),
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    return this.map = new google.maps.Map(this.$el.find('.map-canvas')[0], mapOptions);
+  };
+
+  LocationsView.prototype.renderItem = function(model) {
+    var marker, myLatlng, self;
+    myLatlng = new google.maps.LatLng(model.get('latitude'), model.get('longitude'));
+    marker = new google.maps.Marker({
+      position: myLatlng,
+      map: this.map,
+      animation: google.maps.Animation.DROP,
+      title: model.get('ip')
+    });
+    self = this;
+    _.defer(function() {
+      self = self.map.panTo(myLatlng);
+      return google.maps.event.trigger(self.map, "resize");
+    });
+    $(window).resize();
+    return LocationsView.__super__.renderItem.apply(this, arguments);
+  };
+
+  LocationsView.prototype.dispose = function() {
+    LocationsView.__super__.dispose.apply(this, arguments);
+    if (this.map != null) {
+      return this.map = null;
+    }
+  };
 
   return LocationsView;
 
@@ -1471,7 +1512,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   
 
 
-  return "<h2>Locations</h2>\n<div class=\"collection\"></div>";
+  return "<h2>Locations</h2>\n\n      <div class=\"jumbotron map-canvas\" style=\"height:400px\">\n      	</div>\n<div class=\"collection\"></div>";
   });
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -1491,7 +1532,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   
 
 
-  return " <form class=\"form-signin\">\n 	<div class=\"logocontainer\">\n 	<i class=\"fa logo fa-key\"></i>\n </div>\n        <h2 class=\"form-signin-heading\">Please sign in</h2>\n        <input type=\"text\" class=\"form-control email\" placeholder=\"Email address\" autofocus>\n        <input type=\"password\" class=\"form-control password\" placeholder=\"Password\">\n        <label class=\"checkbox\">\n          <input type=\"checkbox\" value=\"remember-me\"> Remember me\n        </label>\n        <button class=\"btn btn-lg btn-primary btn-block login\" type=\"submit\">Sign in</button>\n        <p>Do not have an account yet? <a href=\"/register\" class=\"btn btn-link\">Register here</a></p>\n      </form>\n";
+  return " <form class=\"form-signin\">\n 	<div class=\"logocontainer\">\n 	<i class=\"fa logo fa-key\"></i>\n </div>\n        <h2 class=\"form-signin-heading\">Please sign in</h2>\n        <input type=\"text\" class=\"form-control email\" placeholder=\"Email address\" autofocus>\n        <input type=\"password\" class=\"form-control password\" placeholder=\"Password\">\n        <button class=\"btn btn-lg btn-primary btn-block login\" type=\"submit\">Sign in</button>\n        <p>Do not have an account yet? <a href=\"/register\" class=\"btn btn-link\">Register here</a></p>\n      </form>\n";
   });
 if (typeof define === 'function' && define.amd) {
   define([], function() {

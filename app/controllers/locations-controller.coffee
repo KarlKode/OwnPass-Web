@@ -8,7 +8,7 @@ module.exports = class LocationsController extends AppController
 
   index: ->
     @locations = new Collection null, model: Location
-    @locations.url = "#{window.api}locations"
+    @locations.url = "#{window.api}logins"
     @view = new LocationsView collection: @locations, region: 'main'
-    @view.render
+    @view.render()
     @locations.fetch()

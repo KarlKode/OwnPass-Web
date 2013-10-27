@@ -8,7 +8,7 @@ $ ->
       if window.user?
         xhr.setRequestHeader("Authorization", "Basic " + btoa(window.user.email + ":" + window.user.password))
     statusCode:
-        401: (xhr)->
+        400: (xhr)->
             json = $.parseJSON(xhr.responseText);
             if json.id? and json.device?
               Chaplin.helpers.redirectTo 'login#authorize', {devid:json.id,devhash:json.device}
